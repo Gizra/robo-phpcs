@@ -7,7 +7,54 @@ use Robo\ResultData;
 /**
  * Coding standard checks for Drupal.
  */
+<?php
+
+namespace GizraRobo;
+
+use Robo\ResultData;
+
+/**
+ * Coding standard checks for Drupal.
+ */
 trait PhpcsTasks {
+
+  /**
+   * Directories to scan.
+   *
+   * @var string[]
+   */
+  protected array $directories = [
+    'modules/custom',
+    'themes/custom',
+    'profiles/custom',
+    '../RoboFile.php',
+    '../robo-components',
+    'sites/default/settings.pantheon.php',
+  ];
+
+  /**
+   * Standards to use.
+   *
+   * @var string[]
+   */
+  protected array $standards = [
+    'Drupal',
+    'DrupalPractice',
+  ];
+
+  /**
+   * Ignore patterns.
+   *
+   * @var string
+   */
+  protected string $ignorePatterns = 'dist,node_modules';
+
+  /**
+   * Additional arguments.
+   *
+   * @var string
+   */
+  protected string $additionalArguments = "--parallel=8 -p --colors --extensions=php,module,inc,install,test,profile,theme,css,yaml,txt,md";
 
   /**
    * Perform a Code sniffer test, and fix when applicable.
@@ -17,44 +64,37 @@ trait PhpcsTasks {
    *   successful.
    */
   public function phpcs(): ?ResultData {
-    $standards = [
-      'Drupal',
-      'DrupalPractice',
-    ];
+    $error_code = null;
 
-    $commands = [
-      'phpcbf',
-      'phpcs',
-    ];
+    // Include themeName only if it actually exists.
+    $ignore = '';
+    if (!empty(self::$themeName)) {
+      $ignore = "--ignore=" . self::$themeName . "/{$this->ignorePatterns}";
+    } else {
+      $ignore = "--ignore={$this->ignorePatterns}";
+    }
 
-    $directories = [
-      'modules/custom',
-      'themes/custom',
-      'profiles/custom',
-      '../RoboFile.php',
-      '../robo-components',
-      'sites/default/settings.pantheon.php',
-    ];
+    foreach ($this->directories as $directory) {
+      foreach ($this->standards as $standard) {
+        $arguments = $this->additionalArguments . " --standard=$standard $ignore";
 
-    $error_code = NULL;
-
-    foreach ($directories as $directory) {
-      foreach ($standards as $standard) {
-        $arguments = "--parallel=8 --standard=$standard -p --ignore=" . self::$themeName . "/dist,node_modules --colors --extensions=php,module,inc,install,test,profile,theme,css,yaml,txt,md";
+        $commands = [
+          'phpcbf',
+          'phpcs',
+        ];
 
         foreach ($commands as $command) {
           $result = $this->_exec("cd web && ../vendor/bin/$command $directory $arguments");
-          if (empty($error_code) && !$result->wasSuccessful()) {
+          if ($error_code === null && !$result->wasSuccessful()) {
             $error_code = $result->getExitCode();
           }
         }
       }
     }
 
-    if (!empty($error_code)) {
+    if ($error_code !== null) {
       return new ResultData($error_code, 'PHPCS found some issues');
     }
-    return NULL;
+    return null;
   }
-
 }
