@@ -46,4 +46,4 @@ This will run the PHP Code Sniffer and the PHP Code Beautifier and Fixer for the
 
 ## Options and Configuration
 
-The trait includes a set list of directories and file types to scan. If you want to customize this, you can override the `phpcs()` method in your `RoboFile.php`.
+The trait includes a set list of directories and file types to scan. If you want to customize this, you can override the respective variables in your `RoboFile.php`.
