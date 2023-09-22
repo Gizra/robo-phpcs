@@ -7,15 +7,6 @@ use Robo\ResultData;
 /**
  * Coding standard checks for Drupal.
  */
-<?php
-
-namespace GizraRobo;
-
-use Robo\ResultData;
-
-/**
- * Coding standard checks for Drupal.
- */
 trait PhpcsTasks {
 
   /**
